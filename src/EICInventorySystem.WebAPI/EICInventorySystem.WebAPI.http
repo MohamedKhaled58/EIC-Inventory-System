@@ -1,0 +1,6 @@
+@EICInventorySystem.WebAPI_HostAddress = http://localhost:5152
+
+GET {{EICInventorySystem.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

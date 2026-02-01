@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EICInventorySystem.Application/EICInventorySystem.Application.csproj" />
+    <Project Path="src/EICInventorySystem.Domain/EICInventorySystem.Domain.csproj" />
+    <Project Path="src/EICInventorySystem.Infrastructure/EICInventorySystem.Infrastructure.csproj" />
+    <Project Path="src/EICInventorySystem.WebAPI/EICInventorySystem.WebAPI.csproj" />
+  </Folder>
+</Solution>
