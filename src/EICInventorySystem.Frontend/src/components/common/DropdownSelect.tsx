@@ -26,7 +26,7 @@ interface DropdownSelectProps<T> {
  * Generic Dropdown Select Component
  * Provides consistent dropdown selection with bilingual labels
  */
-export const DropdownSelect = <T extends string | number | boolean>({
+export const DropdownSelect = <T extends string | number>({
     label,
     labelArabic = 'اختر',
     value,
@@ -48,7 +48,7 @@ export const DropdownSelect = <T extends string | number | boolean>({
                 fullWidth
             >
                 {options.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
+                    <MenuItem key={String(option.value)} value={option.value}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography variant="body2">{option.labelArabic || option.label}</Typography>
                             {option.labelArabic && option.labelArabic !== option.label && (

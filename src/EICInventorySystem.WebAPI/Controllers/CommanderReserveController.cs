@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EICInventorySystem.WebAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/commander-reserve")]
 [Authorize]
 public class CommanderReserveController : ControllerBase
 {

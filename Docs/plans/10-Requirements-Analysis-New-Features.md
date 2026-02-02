@@ -1087,7 +1087,7 @@ const StockTab: React.FC<{ item: ItemDetails }> = ({ item }) => {
                             <TableCell>النوع</TableCell>
                             <TableCell>الإجمالي</TableCell>
                             <TableCell>العام</TableCell>
-                            <TableCell>الاحتياطي ⭐</TableCell>
+                            <TableCell>الاحتياطي⭐ </TableCell>
                             <TableCell>المتاح</TableCell>
                             <TableCell>الحالة</TableCell>
                         </TableRow>

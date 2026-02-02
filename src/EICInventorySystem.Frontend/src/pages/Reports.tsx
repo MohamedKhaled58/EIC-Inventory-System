@@ -525,7 +525,7 @@ const InventoryReportTable: React.FC<InventoryReportTableProps> = ({ data }) => 
                         <TableCell>المستودع</TableCell>
                         <TableCell align="right">الإجمالي</TableCell>
                         <TableCell align="right">العام</TableCell>
-                        <TableCell align="right">الاحتياطي ⭐</TableCell>
+                        <TableCell align="right">احتياطي القائد</TableCell>
                         <TableCell align="right">المحجوز</TableCell>
                         <TableCell align="right">المتاح</TableCell>
                         <TableCell>الحالة</TableCell>
@@ -541,8 +541,8 @@ const InventoryReportTable: React.FC<InventoryReportTableProps> = ({ data }) => 
                             </TableCell>
                         </TableRow>
                     ) : (
-                        data.map((item) => (
-                            <TableRow key={`${item.itemId}-${item.warehouseName}`} hover>
+                        data.map((item, index) => (
+                            <TableRow key={`${item.itemId ?? index}-${item.warehouseName ?? 'wh'}`} hover>
                                 <TableCell>{item.itemCode}</TableCell>
                                 <TableCell>
                                     <Box>

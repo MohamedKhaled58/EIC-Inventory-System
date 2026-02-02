@@ -85,6 +85,13 @@ public class CommanderReserveService : ICommanderReserveService
         return grouped;
     }
 
+    public Task<IEnumerable<CommanderReserveRequestDto>> GetPendingRequestsAsync(CancellationToken cancellationToken = default)
+    {
+        // Note: In a full implementation, this would query a CommanderReserveRequest entity
+        // For now, return an empty list as the request tracking is not fully implemented
+        return Task.FromResult<IEnumerable<CommanderReserveRequestDto>>(new List<CommanderReserveRequestDto>());
+    }
+
     public async Task<CommanderReserveRequestDto> CreateRequestAsync(CreateCommanderReserveRequestDto request, int userId, CancellationToken cancellationToken = default)
     {
         // Get item and warehouse info

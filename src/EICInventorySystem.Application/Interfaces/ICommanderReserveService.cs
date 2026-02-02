@@ -6,6 +6,7 @@ public interface ICommanderReserveService
 {
     Task<IEnumerable<CommanderReserveDto>> GetCommanderReserveAsync(int? warehouseId = null, int? itemId = null, CancellationToken cancellationToken = default);
     Task<IEnumerable<CommanderReserveSummaryDto>> GetCommanderReserveSummaryAsync(int? warehouseId = null, CancellationToken cancellationToken = default);
+    Task<IEnumerable<CommanderReserveRequestDto>> GetPendingRequestsAsync(CancellationToken cancellationToken = default);
     Task<CommanderReserveRequestDto> CreateRequestAsync(CreateCommanderReserveRequestDto request, int userId, CancellationToken cancellationToken = default);
     Task<CommanderReserveRequestDto> ApproveRequestAsync(ApproveCommanderReserveRequestDto request, int userId, CancellationToken cancellationToken = default);
     Task<CommanderReserveRequestDto> RejectRequestAsync(RejectCommanderReserveRequestDto request, int userId, CancellationToken cancellationToken = default);

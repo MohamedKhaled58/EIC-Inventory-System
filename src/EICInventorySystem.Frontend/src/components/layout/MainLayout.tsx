@@ -33,7 +33,7 @@ const MainLayout: React.FC = () => {
         { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', labelAr: 'لوحة التحكم' },
         { path: '/inventory', icon: Package, label: 'Inventory', labelAr: 'المخزون' },
         { path: '/requisitions', icon: FileText, label: 'Requisitions', labelAr: 'الطلبات' },
-        { path: '/transfers', icon: ShoppingCart, label: 'Transfers', labelAr: 'النقل' },
+        { path: '/transfers', icon: ShoppingCart, label: 'Custody Transfer', labelAr: 'نقل العهده' },
         { path: '/projects', icon: ClipboardList, label: 'Projects', labelAr: 'المشاريع' },
         { path: '/boq', icon: FileSpreadsheet, label: 'Project BOQ', labelAr: 'قائمة الكميات' },
         { path: '/custody', icon: UserCog, label: 'Custody', labelAr: 'العهد التشغيلية' },
@@ -57,8 +57,8 @@ const MainLayout: React.FC = () => {
                     <div className="p-6 border-b border-blue-700">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-xl font-bold">EIC Inventory</h1>
-                                <p className="text-xs text-blue-200 mt-1">نظام إدارة المخازن</p>
+                                <h1 className="text-xl font-bold">EIC Inventory System</h1>
+                                <p className="text-xs text-blue-200 mt-1">نظام إدارة مخازن مجمع الصناعات الهندسيه</p>
                             </div>
                             <button
                                 onClick={() => setSidebarOpen(false)}
@@ -135,7 +135,7 @@ const MainLayout: React.FC = () => {
                         <div className="flex items-center gap-4">
                             <div className="text-left">
                                 <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                                <p className="text-xs text-gray-500">{user?.factoryName || 'Complex Level'}</p>
+                                <p className="text-xs text-gray-500">{user?.factoryName || 'Complex Commander Level'}</p>
                             </div>
                         </div>
                     </div>

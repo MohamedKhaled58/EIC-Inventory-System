@@ -1,5 +1,6 @@
 using EICInventorySystem.Application.Common.DTOs;
 using EICInventorySystem.Application.Queries;
+using EICInventorySystem.Application.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -103,9 +104,6 @@ public class WarehousesController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Search warehouses
-    /// </summary>
     [HttpGet("search")]
     public async Task<ActionResult<IEnumerable<WarehouseDto>>> SearchWarehouses(
         [FromQuery] string? query = null,
@@ -121,6 +119,50 @@ public class WarehousesController : ControllerBase
         {
             _logger.LogError(ex, "Error searching warehouses");
             return StatusCode(500, new { message = "Error searching warehouses", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Create a new warehouse
+    /// </summary>
+    [HttpPost]
+    [Authorize(Roles = "ComplexCommander,FactoryCommander")]
+    public async Task<ActionResult<WarehouseDto>> CreateWarehouse([FromBody] CreateWarehouseCommand command)
+    {
+        try
+        {
+            var result = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetWarehouse), new { id = result.Id }, result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating warehouse");
+            return StatusCode(500, new { message = "Error creating warehouse", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Update an existing warehouse
+    /// </summary>
+    [HttpPut("{id}")]
+    [Authorize(Roles = "ComplexCommander,FactoryCommander")]
+    public async Task<ActionResult<WarehouseDto>> UpdateWarehouse(int id, [FromBody] UpdateWarehouseCommand command)
+    {
+        if (id != command.Id) return BadRequest();
+
+        try
+        {
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating warehouse {Id}", id);
+            return StatusCode(500, new { message = "Error updating warehouse", error = ex.Message });
         }
     }
 }

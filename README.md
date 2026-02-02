@@ -1,5 +1,4 @@
-# Military Industrial Complex Inventory Command System
-## مجمع الصناعات الهندسية - نظام إدارة المخازن
+Inventory System
 
 A mission-critical inventory management platform for the Egyptian Armed Forces Engineering Industries Complex (مجمع الصناعات الهندسية للقوات المسلحة).
 
@@ -95,58 +94,6 @@ The system follows **Clean Architecture** principles with **Domain-Driven Design
 - **Axios** - HTTP Client
 - **Vite** - Build Tool
 
----
-
-## 📁 Project Structure
-
-```
-EIC Inventory System/
-├── src/
-│   ├── EICInventorySystem.Domain/          # Domain Layer
-│   │   ├── Entities/
-│   │   ├── ValueObjects/
-│   │   ├── Events/
-│   │   └── Interfaces/
-│   │
-│   ├── EICInventorySystem.Application/     # Application Layer
-│   │   ├── Commands/
-│   │   ├── Queries/
-│   │   ├── Handlers/
-│   │   ├── DTOs/
-│   │   ├── Validators/
-│   │   └── Interfaces/
-│   │
-│   ├── EICInventorySystem.Infrastructure/  # Infrastructure Layer
-│   │   ├── Data/
-│   │   ├── Repositories/
-│   │   ├── Services/
-│   │   └── BackgroundServices/
-│   │
-│   ├── EICInventorySystem.WebAPI/        # Presentation Layer (API)
-│   │   ├── Controllers/
-│   │   ├── Middleware/
-│   │   ├── Filters/
-│   │   └── Configuration/
-│   │
-│   └── EICInventorySystem.Frontend/      # Presentation Layer (UI)
-│       ├── src/
-│       │   ├── pages/
-│       │   ├── components/
-│       │   ├── services/
-│       │   ├── types/
-│       │   └── theme/
-│       └── public/
-│
-├── Docs/                                 # Documentation
-│   ├── The PRD.txt
-│   ├── ARCHITECTURE.md
-│   ├── API.md
-│   └── DEPLOYMENT.md
-│
-└── README.md
-```
-
----
 
 ## ✨ Key Features
 
@@ -351,4 +298,3 @@ Internal Use Only - Egyptian Armed Forces Engineering Industries Complex
 
 ---
 
-**© 2025 مجمع الصناعات الهندسية للقوات المسلحة**

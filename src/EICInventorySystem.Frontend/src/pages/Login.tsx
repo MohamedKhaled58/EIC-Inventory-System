@@ -91,6 +91,7 @@ const Login: React.FC = () => {
                             required
                             autoFocus
                             disabled={loading}
+                            autoComplete="username"
                         />
                         <TextField
                             fullWidth
@@ -102,6 +103,7 @@ const Login: React.FC = () => {
                             margin="normal"
                             required
                             disabled={loading}
+                            autoComplete="current-password"
                         />
                         <Button
                             type="submit"
@@ -117,7 +119,7 @@ const Login: React.FC = () => {
                     </form>
 
                     <Typography variant="caption" color="textSecondary" display="block" align="center" sx={{ mt: 2 }}>
-                        Engineering Industries Complex - Military Inventory System
+                        Engineering Industries Complex -  Inventory System
                     </Typography>
                 </Paper>
             </Box>

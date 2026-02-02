@@ -424,15 +424,15 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ settings, onChange, o
           <CardContent>
             <Box display="flex" flexDirection="column" alignItems="center">
               <Avatar sx={{ width: 120, height: 120, mb: 2, bgcolor: 'primary.main' }}>
-                {settings.fullNameAr.charAt(0)}
+                {settings?.fullNameAr?.charAt(0) || settings?.fullName?.charAt(0) || 'U'}
               </Avatar>
               <Typography variant="h6" gutterBottom>
-                {settings.fullNameAr}
+                {settings?.fullNameAr || 'N/A'}
               </Typography>
               <Typography variant="body2" color="textSecondary" gutterBottom>
-                {settings.fullName}
+                {settings?.fullName || ''}
               </Typography>
-              <Chip label={settings.role} color="primary" size="small" />
+              <Chip label={settings?.role || 'User'} color="primary" size="small" />
             </Box>
           </CardContent>
         </Card>
@@ -443,68 +443,74 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ settings, onChange, o
             <Typography variant="h6" gutterBottom>
               Profile Information / معلومات الملف الشخصي
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Username / اسم المستخدم"
-                  value={settings.username}
-                  disabled
-                  margin="normal"
-                />
+            {settings ? (
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Username / اسم المستخدم"
+                    value={settings.username || ''}
+                    disabled
+                    margin="normal"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Email / البريد الإلكتروني"
+                    value={settings.email || ''}
+                    disabled
+                    margin="normal"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Full Name (Arabic) / الاسم الكامل"
+                    value={settings.fullNameAr || ''}
+                    onChange={(e) => onChange({ ...settings, fullNameAr: e.target.value })}
+                    margin="normal"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Full Name (English)"
+                    value={settings.fullName || ''}
+                    onChange={(e) => onChange({ ...settings, fullName: e.target.value })}
+                    margin="normal"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Phone Number / رقم الهاتف"
+                    value={settings.phoneNumber || ''}
+                    onChange={(e) => onChange({ ...settings, phoneNumber: e.target.value })}
+                    margin="normal"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Role / الدور"
+                    value={settings.role || ''}
+                    disabled
+                    margin="normal"
+                  />
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Email / البريد الإلكتروني"
-                  value={settings.email}
-                  disabled
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Full Name (Arabic) / الاسم الكامل"
-                  value={settings.fullNameAr}
-                  onChange={(e) => onChange({ ...settings, fullNameAr: e.target.value })}
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Full Name (English)"
-                  value={settings.fullName}
-                  onChange={(e) => onChange({ ...settings, fullName: e.target.value })}
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Phone Number / رقم الهاتف"
-                  value={settings.phoneNumber}
-                  onChange={(e) => onChange({ ...settings, phoneNumber: e.target.value })}
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Role / الدور"
-                  value={settings.role}
-                  disabled
-                  margin="normal"
-                />
-              </Grid>
-            </Grid>
+            ) : (
+              <Box py={3} display="flex" justifyContent="center">
+                <CircularProgress />
+              </Box>
+            )}
             <Box mt={3} display="flex" justifyContent="flex-end">
               <Button
                 variant="contained"
                 startIcon={<SaveIcon />}
                 onClick={onSave}
-                disabled={saving}
+                disabled={saving || !settings}
               >
                 {saving ? 'Saving...' : 'Save / حفظ'}
               </Button>

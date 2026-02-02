@@ -49,6 +49,38 @@ export interface UpdateDepartmentRequest {
     factoryId: number;
 }
 
+export interface Warehouse {
+    id: number;
+    name: string;
+    nameAr: string;
+    code: string;
+    type: 'Central' | 'Factory';
+    location: string;
+    isActive: boolean;
+    factoryId?: number;
+    factoryName?: string;
+}
+
+export interface CreateWarehouseRequest {
+    name: string;
+    nameAr: string;
+    code: string;
+    type: 'Central' | 'Factory';
+    location: string;
+    factoryId?: number;
+}
+
+export interface UpdateWarehouseRequest {
+    id: number;
+    name: string;
+    nameAr: string;
+    code: string;
+    type: 'Central' | 'Factory';
+    location: string;
+    isActive: boolean;
+    factoryId?: number;
+}
+
 class FactoryService {
     async getFactories(isActive?: boolean): Promise<Factory[]> {
         const params = new URLSearchParams();
@@ -86,6 +118,24 @@ class FactoryService {
 
     async updateDepartment(data: UpdateDepartmentRequest): Promise<Department> {
         return await apiClient.put<Department>(`/api/departments/${data.id}`, data);
+    }
+
+    async getWarehouses(factoryId?: number, type: 'Central' | 'Factory' | null = null, isActive?: boolean): Promise<Warehouse[]> {
+        const params = new URLSearchParams();
+        if (factoryId) params.append('factoryId', factoryId.toString());
+        if (type) params.append('type', type);
+        if (isActive !== undefined) params.append('isActive', isActive.toString());
+
+        const response = await apiClient.get<Warehouse[] | { data: Warehouse[] }>(`/api/warehouses?${params.toString()}`);
+        return Array.isArray(response) ? response : response.data || [];
+    }
+
+    async createWarehouse(data: CreateWarehouseRequest): Promise<Warehouse> {
+        return await apiClient.post<Warehouse>('/api/warehouses', data);
+    }
+
+    async updateWarehouse(data: UpdateWarehouseRequest): Promise<Warehouse> {
+        return await apiClient.put<Warehouse>(`/api/warehouses/${data.id}`, data);
     }
 }
 

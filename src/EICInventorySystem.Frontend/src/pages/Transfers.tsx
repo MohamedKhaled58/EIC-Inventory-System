@@ -67,6 +67,20 @@ function TabPanel(props: TabPanelProps) {
     );
 }
 
+interface TransferItem {
+    id: number;
+    itemId: number;
+    itemCode: string;
+    itemName: string;
+    itemNameAr: string;
+    unit: string;
+    requestedQuantity: number;
+    approvedQuantity: number;
+    shippedQuantity: number;
+    receivedQuantity: number;
+    notes?: string;
+}
+
 interface TransferRequest {
     id: number;
     transferNumber: string;
@@ -76,12 +90,7 @@ interface TransferRequest {
     toWarehouseId: number;
     toWarehouseName: string;
     toWarehouseNameAr: string;
-    itemId: number;
-    itemCode: string;
-    itemName: string;
-    itemNameAr: string;
-    quantity: number;
-    unit: string;
+    items: TransferItem[];
     reason: string;
     priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
     status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'IN_TRANSIT' | 'COMPLETED' | 'CANCELLED';
@@ -127,13 +136,18 @@ const Transfers: React.FC = () => {
     const [selectedTransfer, setSelectedTransfer] = useState<TransferRequest | null>(null);
 
     // Form state
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        fromWarehouseId: string;
+        toWarehouseId: string;
+        items: { itemId: string; quantity: string }[];
+        reason: string;
+        priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+    }>({
         fromWarehouseId: '',
         toWarehouseId: '',
-        itemId: '',
-        quantity: '',
+        items: [{ itemId: '', quantity: '' }],
         reason: '',
-        priority: 'MEDIUM' as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT',
+        priority: 'MEDIUM',
     });
 
     useEffect(() => {
@@ -170,8 +184,7 @@ const Transfers: React.FC = () => {
         setFormData({
             fromWarehouseId: '',
             toWarehouseId: '',
-            itemId: '',
-            quantity: '',
+            items: [{ itemId: '', quantity: '' }],
             reason: '',
             priority: 'MEDIUM',
         });
@@ -185,14 +198,24 @@ const Transfers: React.FC = () => {
 
     const handleCreateSubmit = async () => {
         try {
-            await apiClient.post('/api/transfers', {
+            if (!formData.fromWarehouseId || !formData.toWarehouseId || formData.items.some(i => !i.itemId || !i.quantity)) {
+                setError('Please fill in all required fields');
+                return;
+            }
+
+            const payload = {
                 fromWarehouseId: parseInt(formData.fromWarehouseId),
                 toWarehouseId: parseInt(formData.toWarehouseId),
-                itemId: parseInt(formData.itemId),
-                quantity: parseFloat(formData.quantity),
-                reason: formData.reason,
-                priority: formData.priority,
-            });
+                items: formData.items.map(item => ({
+                    itemId: parseInt(item.itemId),
+                    requestedQuantity: parseFloat(item.quantity),
+                    fromCommanderReserve: false,
+                    toCommanderReserve: false,
+                })),
+                notes: formData.reason,
+            };
+
+            await apiClient.post('/api/transfers', payload);
             setSuccess('Transfer request created successfully');
             setCreateDialogOpen(false);
             loadData();
@@ -320,7 +343,8 @@ const Transfers: React.FC = () => {
 
     return (
         <Container maxWidth="xl">
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+            {/* Header */}
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} mt={3}>
                 <Box>
                     <Typography variant="h4" gutterBottom>
                         عمليات النقل
@@ -330,7 +354,7 @@ const Transfers: React.FC = () => {
                     </Typography>
                 </Box>
                 <Box display="flex" gap={2}>
-                    <Tooltip title="Refresh">
+                    <Tooltip title="تحديث">
                         <IconButton onClick={loadData} color="primary">
                             <RefreshIcon />
                         </IconButton>
@@ -341,7 +365,7 @@ const Transfers: React.FC = () => {
                             startIcon={<AddIcon />}
                             onClick={handleCreateClick}
                         >
-                            New Transfer
+                            طلب نقل جديد
                         </Button>
                     )}
                 </Box>
@@ -429,16 +453,16 @@ const Transfers: React.FC = () => {
             </TabPanel>
 
             {/* Create Transfer Dialog */}
-            <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="md" fullWidth>
-                <DialogTitle>Create New Transfer Request</DialogTitle>
+            <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="lg" fullWidth>
+                <DialogTitle>إنشاء طلب نقل جديد</DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2} sx={{ mt: 1 }}>
                         <Grid item xs={12} sm={6}>
                             <FormControl fullWidth>
-                                <InputLabel>From Warehouse</InputLabel>
+                                <InputLabel>من مستودع</InputLabel>
                                 <Select
                                     value={formData.fromWarehouseId}
-                                    label="From Warehouse"
+                                    label="من مستودع"
                                     onChange={(e) => setFormData({ ...formData, fromWarehouseId: e.target.value })}
                                 >
                                     {warehouses.map((wh) => (
@@ -451,10 +475,10 @@ const Transfers: React.FC = () => {
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <FormControl fullWidth>
-                                <InputLabel>To Warehouse</InputLabel>
+                                <InputLabel>إلى مستودع</InputLabel>
                                 <Select
                                     value={formData.toWarehouseId}
-                                    label="To Warehouse"
+                                    label="إلى مستودع"
                                     onChange={(e) => setFormData({ ...formData, toWarehouseId: e.target.value })}
                                 >
                                     {warehouses.map((wh) => (
@@ -465,78 +489,115 @@ const Transfers: React.FC = () => {
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs={12}>
-                            <Autocomplete
-                                options={items}
-                                getOptionLabel={(option) => `${option.code} - ${option.nameAr}`}
-                                renderInput={(params) => (
-                                    <TextField {...params} label="Item" fullWidth />
-                                )}
-                                onChange={(_, value) => setFormData({ ...formData, itemId: value?.id.toString() || '' })}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="Quantity"
-                                type="number"
-                                value={formData.quantity}
-                                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                            />
-                        </Grid>
                         <Grid item xs={12} sm={6}>
                             <FormControl fullWidth>
-                                <InputLabel>Priority</InputLabel>
+                                <InputLabel>الأولوية</InputLabel>
                                 <Select
                                     value={formData.priority}
-                                    label="Priority"
+                                    label="الأولوية"
                                     onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
                                 >
-                                    <MenuItem value="LOW">Low</MenuItem>
-                                    <MenuItem value="MEDIUM">Medium</MenuItem>
-                                    <MenuItem value="HIGH">High</MenuItem>
-                                    <MenuItem value="URGENT">Urgent</MenuItem>
+                                    <MenuItem value="LOW">منخفض</MenuItem>
+                                    <MenuItem value="MEDIUM">متوسط</MenuItem>
+                                    <MenuItem value="HIGH">عالي</MenuItem>
+                                    <MenuItem value="URGENT">حرج</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid item xs={12} sm={6}>
                             <TextField
                                 fullWidth
-                                label="Reason"
-                                multiline
-                                rows={3}
+                                label="سبب النقل"
                                 value={formData.reason}
                                 onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
                             />
                         </Grid>
+
+                        <Grid item xs={12}>
+                            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                                الأصناف
+                            </Typography>
+                            {formData.items.map((item, index) => (
+                                <Box key={index} sx={{ mb: 2, p: 2, border: '1px solid #e0e0e0', borderRadius: 1, position: 'relative' }}>
+                                    <Grid container spacing={2} alignItems="center">
+                                        <Grid item xs={12} sm={6}>
+                                            <Autocomplete
+                                                options={items}
+                                                getOptionLabel={(option) => `${option.code} - ${option.nameAr}`}
+                                                renderInput={(params) => (
+                                                    <TextField {...params} label="الصنف" fullWidth />
+                                                )}
+                                                value={items.find(i => i.id.toString() === item.itemId) || null}
+                                                onChange={(_, value) => {
+                                                    const newItems = [...formData.items];
+                                                    newItems[index].itemId = value?.id.toString() || '';
+                                                    setFormData({ ...formData, items: newItems });
+                                                }}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={4}>
+                                            <TextField
+                                                fullWidth
+                                                label="الكمية"
+                                                type="number"
+                                                value={item.quantity}
+                                                onChange={(e) => {
+                                                    const newItems = [...formData.items];
+                                                    newItems[index].quantity = e.target.value;
+                                                    setFormData({ ...formData, items: newItems });
+                                                }}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={2}>
+                                            <IconButton
+                                                color="error"
+                                                onClick={() => {
+                                                    const newItems = formData.items.filter((_, i) => i !== index);
+                                                    setFormData({ ...formData, items: newItems });
+                                                }}
+                                                disabled={formData.items.length === 1}
+                                            >
+                                                <CancelIcon />
+                                            </IconButton>
+                                        </Grid>
+                                    </Grid>
+                                </Box>
+                            ))}
+                            <Button
+                                startIcon={<AddIcon />}
+                                onClick={() => setFormData({ ...formData, items: [...formData.items, { itemId: '', quantity: '' }] })}
+                            >
+                                إضافة صنف
+                            </Button>
+                        </Grid>
                     </Grid>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={() => setCreateDialogOpen(false)}>إلغاء</Button>
                     <Button onClick={handleCreateSubmit} variant="contained">
-                        Create Transfer
+                        إنشاء الطلب
                     </Button>
                 </DialogActions>
             </Dialog>
 
             {/* View Transfer Dialog */}
             <Dialog open={viewDialogOpen} onClose={() => setViewDialogOpen(false)} maxWidth="md" fullWidth>
-                <DialogTitle>Transfer Details</DialogTitle>
+                <DialogTitle>تفاصيل النقل</DialogTitle>
                 <DialogContent>
                     {selectedTransfer && (
                         <Grid container spacing={2} sx={{ mt: 1 }}>
                             <Grid item xs={12} sm={6}>
                                 <Typography variant="body2" color="textSecondary">
-                                    Transfer Number
+                                    رقم النقل
                                 </Typography>
                                 <Typography variant="body1">{selectedTransfer.transferNumber}</Typography>
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <Typography variant="body2" color="textSecondary">
-                                    Status
+                                    الحالة
                                 </Typography>
                                 <Chip
-                                    label={selectedTransfer.status}
+                                    label={selectedTransfer.status === 'COMPLETED' ? 'مكتمل' : selectedTransfer.status === 'APPROVED' ? 'معتمد' : selectedTransfer.status === 'IN_TRANSIT' ? 'جاري النقل' : selectedTransfer.status === 'PENDING' ? 'معلق' : selectedTransfer.status === 'REJECTED' ? 'مرفوض' : 'ملغي'}
                                     color={getStatusColor(selectedTransfer.status) as any}
                                     size="small"
                                     icon={getStatusIcon(selectedTransfer.status)}
@@ -555,47 +616,65 @@ const Transfers: React.FC = () => {
                                     </Typography>
                                 </Box>
                             </Grid>
+
                             <Grid item xs={12}>
-                                <Typography variant="body2" color="textSecondary">
-                                    Item
+                                <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                                    الأصناف ({selectedTransfer.items.length})
                                 </Typography>
-                                <Typography variant="body1">
-                                    {selectedTransfer.itemNameAr} ({selectedTransfer.itemCode})
-                                </Typography>
+                                <TableContainer component={Paper} variant="outlined">
+                                    <Table size="small">
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>الصنف</TableCell>
+                                                <TableCell align="right">الكمية المطلوبة</TableCell>
+                                                <TableCell align="right">الكمية المشحونة</TableCell>
+                                                <TableCell align="right">الكمية المستلمة</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {selectedTransfer.items.map((item) => (
+                                                <TableRow key={item.id}>
+                                                    <TableCell>
+                                                        <Box>
+                                                            <Typography variant="body2">{item.itemNameAr}</Typography>
+                                                            <Typography variant="caption" color="textSecondary">{item.itemCode}</Typography>
+                                                        </Box>
+                                                    </TableCell>
+                                                    <TableCell align="right">{item.requestedQuantity} {item.unit}</TableCell>
+                                                    <TableCell align="right">{item.shippedQuantity} {item.unit}</TableCell>
+                                                    <TableCell align="right">{item.receivedQuantity} {item.unit}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
                             </Grid>
+
                             <Grid item xs={12} sm={6}>
                                 <Typography variant="body2" color="textSecondary">
-                                    Quantity
-                                </Typography>
-                                <Typography variant="body1">
-                                    {selectedTransfer.quantity.toLocaleString()} {selectedTransfer.unit}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" color="textSecondary">
-                                    Priority
+                                    الأولوية
                                 </Typography>
                                 <Chip
-                                    label={selectedTransfer.priority}
+                                    label={selectedTransfer.priority === 'URGENT' ? 'حرج' : selectedTransfer.priority === 'HIGH' ? 'عالي' : selectedTransfer.priority === 'MEDIUM' ? 'متوسط' : 'منخفض'}
                                     color={getPriorityColor(selectedTransfer.priority) as any}
                                     size="small"
                                 />
                             </Grid>
                             <Grid item xs={12}>
                                 <Typography variant="body2" color="textSecondary">
-                                    Reason
+                                    سبب النقل
                                 </Typography>
                                 <Typography variant="body1">{selectedTransfer.reason}</Typography>
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <Typography variant="body2" color="textSecondary">
-                                    Requested By
+                                    طالب النقل
                                 </Typography>
                                 <Typography variant="body1">{selectedTransfer.requestedBy}</Typography>
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <Typography variant="body2" color="textSecondary">
-                                    Requested Date
+                                    تاريخ الطلب
                                 </Typography>
                                 <Typography variant="body1">
                                     {new Date(selectedTransfer.requestedDate).toLocaleString('en-GB')}
@@ -605,13 +684,13 @@ const Transfers: React.FC = () => {
                                 <>
                                     <Grid item xs={12} sm={6}>
                                         <Typography variant="body2" color="textSecondary">
-                                            Approved By
+                                            تم الاعتماد بواسطة
                                         </Typography>
                                         <Typography variant="body1">{selectedTransfer.approvedBy}</Typography>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                         <Typography variant="body2" color="textSecondary">
-                                            Approved Date
+                                            تاريخ الاعتماد
                                         </Typography>
                                         <Typography variant="body1">
                                             {selectedTransfer.approvedDate && new Date(selectedTransfer.approvedDate).toLocaleString('en-GB')}
@@ -622,7 +701,7 @@ const Transfers: React.FC = () => {
                             {selectedTransfer.rejectionReason && (
                                 <Grid item xs={12}>
                                     <Typography variant="body2" color="textSecondary">
-                                        Rejection Reason
+                                        سبب الرفض
                                     </Typography>
                                     <Typography variant="body1" color="error">
                                         {selectedTransfer.rejectionReason}
@@ -632,7 +711,7 @@ const Transfers: React.FC = () => {
                             {selectedTransfer.notes && (
                                 <Grid item xs={12}>
                                     <Typography variant="body2" color="textSecondary">
-                                        Notes
+                                        ملاحظات
                                     </Typography>
                                     <Typography variant="body1">{selectedTransfer.notes}</Typography>
                                 </Grid>
@@ -641,7 +720,7 @@ const Transfers: React.FC = () => {
                     )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
+                    <Button onClick={() => setViewDialogOpen(false)}>إغلاق</Button>
                 </DialogActions>
             </Dialog>
         </Container>
@@ -698,24 +777,23 @@ const TransferTable: React.FC<TransferTableProps> = ({
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Transfer #</TableCell>
-                            <TableCell>From</TableCell>
-                            <TableCell>To</TableCell>
-                            <TableCell>Item</TableCell>
-                            <TableCell align="right">Quantity</TableCell>
-                            <TableCell>Priority</TableCell>
-                            <TableCell>Status</TableCell>
-                            <TableCell>Requested By</TableCell>
-                            <TableCell>Date</TableCell>
-                            <TableCell align="center">Actions</TableCell>
+                            <TableCell>رقم النقل</TableCell>
+                            <TableCell>من</TableCell>
+                            <TableCell>إلى</TableCell>
+                            <TableCell>عدد الأصناف</TableCell>
+                            <TableCell>الأولوية</TableCell>
+                            <TableCell>الحالة</TableCell>
+                            <TableCell>طالب النقل</TableCell>
+                            <TableCell>التاريخ</TableCell>
+                            <TableCell align="center">الإجراءات</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {transfers.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={10} align="center">
+                                <TableCell colSpan={9} align="center">
                                     <Typography variant="body2" color="textSecondary">
-                                        No transfers found
+                                        لا توجد عمليات نقل
                                     </Typography>
                                 </TableCell>
                             </TableRow>
@@ -740,15 +818,7 @@ const TransferTable: React.FC<TransferTableProps> = ({
                                         </Box>
                                     </TableCell>
                                     <TableCell>
-                                        <Box>
-                                            <Typography variant="body2">{transfer.itemNameAr}</Typography>
-                                            <Typography variant="caption" color="textSecondary">
-                                                {transfer.itemCode}
-                                            </Typography>
-                                        </Box>
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        {transfer.quantity.toLocaleString()} {transfer.unit}
+                                        {transfer.items.length} أصناف
                                     </TableCell>
                                     <TableCell>
                                         <Chip
@@ -841,35 +911,31 @@ const TransferTable: React.FC<TransferTableProps> = ({
 
             {/* Reject Dialog */}
             <Dialog open={rejectDialogOpen} onClose={() => setRejectDialogOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle>Reject Transfer</DialogTitle>
+                <DialogTitle>رفض النقل</DialogTitle>
                 <DialogContent>
                     {selectedTransfer && (
                         <Box>
                             <Typography variant="body2" gutterBottom>
-                                <strong>Transfer #:</strong> {selectedTransfer.transferNumber}
+                                <strong>رقم النقل:</strong> {selectedTransfer.transferNumber}
                             </Typography>
-                            <Typography variant="body2" gutterBottom>
-                                <strong>Item:</strong> {selectedTransfer.itemNameAr}
-                            </Typography>
-                            <TextField
-                                autoFocus
-                                margin="dense"
-                                label="Rejection Reason *"
-                                fullWidth
-                                multiline
-                                rows={3}
-                                value={rejectionReason}
-                                onChange={(e) => setRejectionReason(e.target.value)}
-                                placeholder="Please provide a reason for rejection..."
-                                required
-                            />
                         </Box>
                     )}
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="سبب الرفض"
+                        fullWidth
+                        multiline
+                        rows={3}
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
+                        required
+                    />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setRejectDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleRejectConfirm} variant="contained" color="error">
-                        Reject
+                    <Button onClick={() => setRejectDialogOpen(false)}>إلغاء</Button>
+                    <Button onClick={handleRejectConfirm} variant="contained" color="error" disabled={!rejectionReason}>
+                        تأكيد الرفض
                     </Button>
                 </DialogActions>
             </Dialog>

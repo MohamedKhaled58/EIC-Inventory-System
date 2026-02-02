@@ -54,6 +54,7 @@ public static class DependencyInjection
         services.AddScoped<ISecurityService, SecurityService>();
         
         // BOQ & Custody Services
+        services.AddScoped<IProjectService, ProjectService>();
         services.AddScoped<IProjectBOQService, ProjectBOQService>();
         services.AddScoped<IWorkerService, WorkerService>();
         services.AddScoped<IOperationalCustodyService, OperationalCustodyService>();

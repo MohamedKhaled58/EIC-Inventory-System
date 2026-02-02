@@ -237,10 +237,10 @@ const CommanderReserve: React.FC = () => {
     };
 
     const renderOverview = () => {
-        const totalReserve = reserveItems.reduce((sum, item) => sum + item.commanderReserveQuantity, 0);
-        const criticalItems = reserveItems.filter((item) => item.status === 'CRITICAL').length;
-        const lowItems = reserveItems.filter((item) => item.status === 'LOW').length;
-        const pendingCount = pendingRequests.length;
+        const totalReserve = (reserveItems || []).reduce((sum, item) => sum + item.commanderReserveQuantity, 0);
+        const criticalItems = (reserveItems || []).filter((item) => item.status === 'CRITICAL').length;
+        const lowItems = (reserveItems || []).filter((item) => item.status === 'LOW').length;
+        const pendingCount = (pendingRequests || []).length;
 
         return (
             <Grid container spacing={3}>
@@ -330,14 +330,14 @@ const CommanderReserve: React.FC = () => {
                         <TableCell align="right">Total Stock</TableCell>
                         <TableCell align="right">General Stock</TableCell>
                         <TableCell align="right" sx={{ backgroundColor: '#8b6914', color: 'white' }}>
-                            Commander's Reserve ⭐
+                            Commander's Reserve
                         </TableCell>
                         <TableCell align="right">Min Required</TableCell>
                         <TableCell>Status</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {reserveItems.map((item) => (
+                    {(reserveItems || []).map((item) => (
                         <TableRow key={item.id} hover>
                             <TableCell>{item.itemCode}</TableCell>
                             <TableCell>
@@ -399,7 +399,7 @@ const CommanderReserve: React.FC = () => {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {pendingRequests.length === 0 ? (
+                    {(pendingRequests || []).length === 0 ? (
                         <TableRow>
                             <TableCell colSpan={canApproveReserve ? 10 : 9} align="center">
                                 <Typography variant="body2" color="textSecondary">
@@ -408,7 +408,7 @@ const CommanderReserve: React.FC = () => {
                             </TableCell>
                         </TableRow>
                     ) : (
-                        pendingRequests.map((request) => (
+                        (pendingRequests || []).map((request) => (
                             <TableRow key={request.id} hover>
                                 <TableCell>{request.requestNumber}</TableCell>
                                 <TableCell>
@@ -507,7 +507,7 @@ const CommanderReserve: React.FC = () => {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {transactions.map((transaction) => (
+                    {(transactions || []).map((transaction) => (
                         <TableRow key={transaction.id} hover>
                             <TableCell>{transaction.transactionNumber}</TableCell>
                             <TableCell>
@@ -569,7 +569,7 @@ const CommanderReserve: React.FC = () => {
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Box>
                     <Typography variant="h4" gutterBottom>
-                        احتياطي قائد المصنع
+                        احتياطي قائد المجمع / المصنع
                     </Typography>
                     <Typography variant="body1" color="textSecondary">
                         Commander's Reserve Management
@@ -632,7 +632,7 @@ const CommanderReserve: React.FC = () => {
             </TabPanel>
 
             <TabPanel value={tabValue} index={2}>
-                {!canApproveReserve && pendingRequests.length > 0 && (
+                {!canApproveReserve && (pendingRequests || []).length > 0 && (
                     <Alert severity="info" sx={{ mb: 2 }}>
                         Only Factory Commander or Complex Commander can approve reserve requests.
                     </Alert>

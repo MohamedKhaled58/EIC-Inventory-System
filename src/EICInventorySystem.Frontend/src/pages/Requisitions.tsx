@@ -361,13 +361,13 @@ const Requisitions: React.FC = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Req #</TableCell>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Project / Department</TableCell>
-                                <TableCell align="center">Items</TableCell>
-                                <TableCell>Priority</TableCell>
-                                <TableCell>Status</TableCell>
-                                <TableCell align="center">Actions</TableCell>
+                                <TableCell>رقم الطلب</TableCell>
+                                <TableCell>التاريخ</TableCell>
+                                <TableCell>المشروع / القسم</TableCell>
+                                <TableCell align="center">الأصناف</TableCell>
+                                <TableCell>الأولوية</TableCell>
+                                <TableCell>الحالة</TableCell>
+                                <TableCell align="center">الإجراءات</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
